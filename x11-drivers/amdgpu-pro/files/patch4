@@ -1,0 +1,15 @@
+--- ./amd/display/amdgpu_dm/amdgpu_dm.c.orig	2017-11-02 15:16:20.734741754 +0000
++++ ./amd/display/amdgpu_dm/amdgpu_dm.c	2017-11-02 15:21:55.252520869 +0000
+@@ -3448,9 +3448,9 @@
+ }
+ 
+ static const struct drm_plane_helper_funcs dm_plane_helper_funcs = {
+-	.prepare_fb = dm_plane_helper_prepare_fb,
+-	.cleanup_fb = dm_plane_helper_cleanup_fb,
+-	.atomic_check = dm_plane_atomic_check,
++	.prepare_fb = (void*) dm_plane_helper_prepare_fb,
++	.cleanup_fb = (void*) dm_plane_helper_cleanup_fb,
++	.atomic_check = (void*) dm_plane_atomic_check,
+ };
+ 
+ /*

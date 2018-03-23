@@ -1,0 +1,16 @@
+--- ./amd/amdgpu/amdgpu_sa.c.orig	2017-03-22 03:29:19.000000000 +0000
++++ ./amd/amdgpu/amdgpu_sa.c	2017-04-08 12:37:34.927044302 +0100
+@@ -428,13 +428,8 @@
+ 			   soffset, eoffset, eoffset - soffset);
+ 
+ 		if (i->fence)
+-#if defined(BUILD_AS_DKMS)
+-			seq_printf(m, " protected by 0x%08x on context %d",
+-					i->fence->seqno, i->fence->context);
+-#else
+ 			seq_printf(m, " protected by 0x%08x on context %llu",
+ 				   i->fence->seqno, i->fence->context);
+-#endif
+ 
+ 		seq_printf(m, "\n");
+ 	}

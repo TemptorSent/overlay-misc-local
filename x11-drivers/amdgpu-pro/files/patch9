@@ -1,0 +1,26 @@
+--- ./dkms.conf.orig	2017-09-21 19:01:39.045941572 +0100
++++ ./dkms.conf	2017-09-21 19:01:47.475876161 +0100
+@@ -9,19 +9,19 @@
+ 
+ BUILT_MODULE_NAME[0]="amdgpu"
+ BUILT_MODULE_LOCATION[0]="amd/amdgpu"
+-DEST_MODULE_LOCATION[0]="/updates"
++DEST_MODULE_LOCATION[0]="/extra"
+ 
+ BUILT_MODULE_NAME[1]="amdttm"
+ BUILT_MODULE_LOCATION[1]="ttm"
+-DEST_MODULE_LOCATION[1]="/updates"
++DEST_MODULE_LOCATION[1]="/extra"
+ 
+ BUILT_MODULE_NAME[2]="amdkcl"
+ BUILT_MODULE_LOCATION[2]="amd/amdkcl"
+-DEST_MODULE_LOCATION[2]="/updates"
++DEST_MODULE_LOCATION[2]="/extra"
+ 
+ BUILT_MODULE_NAME[3]="amdkfd"
+ BUILT_MODULE_LOCATION[3]="amd/amdkfd"
+-DEST_MODULE_LOCATION[3]="/updates"
++DEST_MODULE_LOCATION[3]="/extra"
+ 
+ # Find out how many CPU cores can be use if we pass appropriate -j option to make.
+ # DKMS could use all cores on multicore systems to build the kernel module.

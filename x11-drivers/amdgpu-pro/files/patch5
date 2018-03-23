@@ -1,0 +1,22 @@
+--- ./amd/display/dc/dm_services.h.orig	2017-02-04 18:38:59.622935141 +0000
++++ ./amd/display/dc/dm_services.h	2017-02-04 18:42:13.380620133 +0000
+@@ -61,13 +61,16 @@
+ 
+ #if defined(CONFIG_DEBUG_KERNEL_DC)
+ #define ASSERT(expr) ASSERT_CRITICAL(expr)
++#endif
+ 
+ #else
+ #define ASSERT(expr) WARN_ON(!(expr))
+-#endif
+-
+ #define BREAK_TO_DEBUGGER() ASSERT(0)
+-
++#define ASSERT_CRITICAL(expr) do { \
++if (WARN_ON(!(expr))) { \
++; \
++} \
++} while (0)
+ #endif /* CONFIG_DEBUG_KERNEL || CONFIG_DEBUG_DRIVER */
+ 
+ #define DC_ERR(...)  do { \

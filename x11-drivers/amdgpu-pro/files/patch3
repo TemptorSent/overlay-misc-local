@@ -1,0 +1,18 @@
+--- ./amd/amdgpu/amdgpu_gds.h.orig	2017-02-04 20:27:46.465655425 +0000
++++ ./amd/amdgpu/amdgpu_gds.h	2017-02-04 20:31:59.887306785 +0000
+@@ -31,6 +31,15 @@
+ #define AMDGPU_GWS_SHIFT	PAGE_SHIFT
+ #define AMDGPU_OA_SHIFT		PAGE_SHIFT
+ 
++#define TTM_PL_PRIV0       (TTM_PL_PRIV + 0)
++#define TTM_PL_PRIV1       (TTM_PL_PRIV + 1)
++#define TTM_PL_PRIV2       (TTM_PL_PRIV + 2)
++
++#define TTM_PL_FLAG_PRIV0  (TTM_PL_FLAG_PRIV << 0)
++#define TTM_PL_FLAG_PRIV1  (TTM_PL_FLAG_PRIV << 1)
++#define TTM_PL_FLAG_PRIV2  (TTM_PL_FLAG_PRIV << 2)
++
++
+ struct amdgpu_ring;
+ struct amdgpu_bo;
+ 

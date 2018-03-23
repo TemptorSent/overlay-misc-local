@@ -1,0 +1,9 @@
+--- ./amd/amdkcl/kcl_drm.c.orig	2017-09-21 21:04:39.657334713 +0100
++++ ./amd/amdkcl/kcl_drm.c	2017-09-21 21:06:29.926342290 +0100
+@@ -524,5 +524,5 @@
+ 	_kcl_drm_atomic_helper_update_legacy_modeset_state = amdkcl_fp_setup(
+ 					"drm_atomic_helper_update_legacy_modeset_state",
+ 					_kcl_drm_atomic_helper_update_legacy_modeset_state_stub);
+-	_kcl_drm_gem_prime_dmabuf_ops = amdkcl_fp_setup("drm_gem_prime_dmabuf_ops", NULL);
++/*	_kcl_drm_gem_prime_dmabuf_ops = amdkcl_fp_setup("drm_gem_prime_dmabuf_ops", NULL);*/
+ }
