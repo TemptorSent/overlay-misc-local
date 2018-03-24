@@ -42,7 +42,9 @@ _rootfs_zfs() {
 }
 
 _build_initramfs() {
-	use genkernel-initramfs || use dracut-initramfs
+	use genkernel-initramfs && return 0
+	use dracut-initramfs && return 0
+	return 1
 }
 
 pkg_pretend() {
@@ -169,7 +171,7 @@ pkg_postinst() {
 	rebuild="@module-rebuild"
 	has_version "sys-fs/zfs[rootfs]" && rebuild+=" spl zfs zfs-kmod"
 	elog "Please run \"emerge ${rebuild} --exclude ${PN}\" to rebuild packages compiled against the kernel source."
-	_build_initramfs && log "Then run \"emerge --config ${PN}\" to generate the initramfs(s)."
+	_build_initramfs && elog "Then run \"emerge --config ${PN}\" to generate the initramfs(s)."
 }
 
 # Build an initramfs using genkernel.
