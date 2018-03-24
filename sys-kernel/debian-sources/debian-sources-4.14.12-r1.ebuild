@@ -1,10 +1,10 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=6
 
 inherit check-reqs eutils mount-boot
 
-SLOT=$PVR
+SLOT="$PV/$PVR"
 CKV=4.14.12
 KV_FULL=${PN}-${PVR}
 EXTRAVERSION=-2
@@ -90,7 +90,10 @@ src_prepare() {
 	
 	## FL-4424: enable legacy support for MCELOG.
 	epatch "${FILESDIR}"/${PN}-4.13.10-mcelog.patch
-	
+
+	# Apply user patches after stock patches and before building .config.
+	eapply_user
+
 	local opts
 	opts="standard"
 	local myarch="amd64"
@@ -101,67 +104,40 @@ src_prepare() {
 	cp "${FILESDIR}"/config-extract . || die
 	chmod +x config-extract || die
 	./config-extract ${myarch} ${opts} || die
+	# Copy our config somewhere safe before doing make mrproper.
 	cp .config "${T}"/config || die
-	make -s mrproper || die "make mrproper failed"
-	#make -s include/linux/version.h || die "make include/linux/version.h failed"
+
 }
 
 src_compile() {
-	use build || return
+	# Clean up and prepare for compiling.
 	cd "${S}"
-	install -d "${T}"/{cache,twork}
-	install -d "${S}/${BUILD_SUB}"
-	DEFAULT_KERNEL_SOURCE="${S}" CMD_KERNEL_DIR="${S}" genkernel ${GKARGS} \
-		--mrproper \
-		--no-install \
-		--no-save-config \
-		--kernel-config="${T}"/config \
-		--fullname="genkernel-${REAL_ARCH}-${MODVER}" \
-		--build-src="${S}" \
-		--build-dst="${S}/${BUILD_SUB}" \
-		--makeopts="${MAKEOPTS}" \
-		--cachedir="${T}"/cache \
-		--tempdir="${T}"/twork \
-		--logfile="${WORKDIR}"/genkernel-compile.log \
-		kernel || die "genkernel kernel failed"
-
-	cp "${T}/config" "${S}/.config"
+	make -s mrproper || die "make mrproper failed"
+	cp "${T}"/config .config || die
+	cp -a "${T}"/debian debian || die
+	yes "" | make oldconfig || die
 }
-
-
 
 src_install() {
 	# copy sources into place:
 	dodir /usr/src
 	cp -a "${S}" "${D}/${INST_DIR}" || die
-	cd "${D}/${INST_DIR}"
-	if use build ; then
-		:
-	else
-		# prepare for real-world use and 3rd-party module building:
-		make mrproper || die
-		cp "${T}"/config .config || die
-		cp -a "${T}"/debian debian || die
-		yes "" | make oldconfig || die
-		# if we didn't use genkernel, we're done. The kernel source tree is left in
-		# an unconfigured state - you can't compile 3rd-party modules against it yet.
-	fi
 }
 
 _postinst_genkernel() {
 	use build || return
 	DEFAULT_KERNEL_SOURCE="${ROOT}${INST_DIR}" CMD_KERNEL_DIR="${ROOT}${INST_DIR}" genkernel ${GKARGS} \
 		--oldconfig\
-		--no-save-config \
+		--save-config \
 		--fullname="genkernel-${REAL_ARCH}-${MODVER}" \
-		--build-src="${ROOT}${INST_DIR}" \
-		--build-dst="${ROOT}${INST_DIR}/${BUILD_SUB}" \
+		--kerneldir="${ROOT}${INST_DIR}" \
 		--makeopts="${MAKEOPTS}" \
-		--logfile="${ROOT}var/log/genkernel-install.log" \
+		--logfile="${ROOT}var/log/genkernel-kernel.log" \
 		--bootdir="${ROOT}boot" \
 		--module-prefix="${ROOT}" \
 		kernel || die "genkernel kernel failed"
 
+	cd "${ROOT}lib/modules/${MODVER}" && find -iname *.ko -exec strip --strip-debug {} \; || die "Couldn't strip modules!"
 }
 
 pkg_postinst() {
@@ -169,7 +145,6 @@ pkg_postinst() {
 	_postinst_genkernel
 
 	# Strip modules
-	if use build ; then cd "${ROOT}lib/modules/${MODVER}" && find -iname *.ko -exec strip --strip-debug {} \; || die "Couldn't strip modules!" ; fi
 
 	# Handle /usr/src/linux symlink
 	if use symlink ; then
@@ -186,8 +161,8 @@ pkg_postinst() {
 	fi
 
 	# Run depmod against our newly installed modules if they exist.
-	if [ -e ${ROOT}lib/modules/${MODVER} ]; then
-		depmod -a ${MODVER}
+	if [ -e "${ROOT}lib/modules/${MODVER}" ]; then
+		depmod -a "${MODVER}"
 	fi
 
 	local rebuild
@@ -200,6 +175,7 @@ pkg_postinst() {
 # Build an initramfs using genkernel.
 _initramfs_genkernel() {
 	genkernel ${GKARGS} \
+		--kerneldir="${ROOT}${INST_DIR}" \
 		--fullname="genkernel-${KERN_ARCH}-${MODVER}" \
 		--makeopts="${MAKEOPTS}" \
 		--bootdir="${ROOT}"boot \
@@ -217,12 +193,12 @@ _initramfs_genkernel() {
 # Build an initramfs using dracut.
 _initramfs_dracut() {
 
-	dracut ${ROOT}boot/initramfs-dracut-${KERN_ARCH}-${MODVER} ${MODVER} || die "dracut initramfs generation failed"
+	dracut "${ROOT}boot/initramfs-dracut-${KERN_ARCH}-${MODVER}" "${MODVER}" || die "dracut initramfs generation failed"
 }
 
 pkg_config() {
-	if [ -e ${ROOT}lib/modules/${MODVER} ]; then
-		depmod -a ${MODVER}
+	if [ -e "${ROOT}lib/modules/${MODVER}" ]; then
+		depmod -a "${MODVER}"
 
 		if ! [[ -h "${ROOT}"usr/src/linux ]] || [[ "$(readlink -f "${ROOT}usr/src/linux")" != "${ROOT}${INST_DIR}" ]] ; then
 			elog "${ROOT}usr/src/linux is not a symlink to ${ROOT}${INST_DIR}."
