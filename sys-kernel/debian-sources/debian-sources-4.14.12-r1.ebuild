@@ -176,26 +176,35 @@ pkg_postinst() {
 
 # Build an initramfs using genkernel.
 _initramfs_genkernel() {
-	genkernel ${GKARGS} \
-		--kerneldir="${ROOT}${INST_DIR}" \
-		--fullname="genkernel-${KERN_ARCH}-${MODVER}" \
-		--makeopts="${MAKEOPTS}" \
-		--bootdir="${ROOT}"boot \
-		--disklabel \
-		--lvm \
-		--luks \
-		--mdadm \
-		$(_rootfs_zfs && printf -- "--zfs") \
-		--iscsi \
-		--module-prefix="${ROOT}" \
-		--logfile="${ROOT}var/log/genkernel-initramfs.log" \
-		initramfs || die "genkernel initramfs generation failed"
+	genkernel_img="${ROOT}${INST_DIR}/genkernel-${REAL_ARCH}-${MODVER}"
+	if ! [ -e "${genkernel_img}" ] ; then
+		genkernel ${GKARGS} \
+			--kerneldir="${ROOT}${INST_DIR}" \
+			--fullname="genkernel-${REAL_ARCH}-${MODVER}" \
+			--makeopts="${MAKEOPTS}" \
+			--bootdir="${ROOT}"boot \
+			--disklabel \
+			--lvm \
+			--luks \
+			--mdadm \
+			$(_rootfs_zfs && printf -- "--zfs") \
+			--iscsi \
+			--module-prefix="${ROOT}" \
+			--logfile="${ROOT}var/log/genkernel-initramfs.log" \
+			initramfs || die "genkernel initramfs generation failed"
+	else
+		elog "Genkernel intramfs already exists at '${genkernel_img}', please rename this file to build a new initramfs."
+	fi
 }
 
 # Build an initramfs using dracut.
 _initramfs_dracut() {
-
-	dracut "${ROOT}boot/initramfs-dracut-${KERN_ARCH}-${MODVER}" "${MODVER}" || die "dracut initramfs generation failed"
+	dracut_img="${ROOT}boot/initramfs-dracut-${REAL_ARCH}-${MODVER}"
+	if ! [ -e "${dracut_img}" ] ; then
+		dracut "${dracut_img}" "${MODVER}" || die "dracut initramfs generation failed"
+	else
+		elog "Dracut initramfs already exists at '${dracut_img}', please rename this file to build a new initramfs."
+	fi
 }
 
 pkg_config() {
