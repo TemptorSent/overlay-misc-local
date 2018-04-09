@@ -6,7 +6,7 @@ inherit check-reqs eutils mount-boot
 MY_PN="debian-sources"
 SLOT="$PV/$PVR"
 CKV=4.14.12
-ZFSV=0.7.7
+ZFSV=0.7.6
 KV_FULL=${CKV}-${PVR}
 EXTRAVERSION=-2
 MODVER=${CKV}${EXTRAVERSION}-debian
