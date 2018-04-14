@@ -51,7 +51,6 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-3.1.0-darwin-isysroot.patch
 
 	# handle gentoo packaging in find modules
-	#"${FILESDIR}"/${PN}-3.9.0_rc2-FindImageMagick.patch
 	"${FILESDIR}"/${PN}-3.0.0-FindBLAS.patch
 	"${FILESDIR}"/${PN}-3.11.0-FindBoost-python.patch
 	"${FILESDIR}"/${PN}-3.0.2-FindLAPACK.patch
