@@ -1,0 +1,110 @@
+diff --git a/Modules/FindBoost.cmake b/Modules/FindBoost.cmake
+index 8d44aee..790476b 100644
+--- a/Modules/FindBoost.cmake
++++ b/Modules/FindBoost.cmake
+@@ -1647,6 +1647,16 @@ foreach(COMPONENT ${Boost_FIND_COMPONENTS})
+   set( _boost_docstring_release "Boost ${COMPONENT} library (release)")
+   set( _boost_docstring_debug   "Boost ${COMPONENT} library (debug)")
+ 
++  if(${COMPONENT} STREQUAL "python" OR ${COMPONENT} STREQUAL "mpi_python")
++    # If a certain version of python has already been selected ensure we select the corresponding boost python version.
++    if(PYTHON_EXECUTABLE)
++      set(GENTOO_PYTHON_EXECUTABLE "${PYTHON_EXECUTABLE}")
++    else()
++      set(GENTOO_PYTHON_EXECUTABLE "python")
++    endif()
++    execute_process(COMMAND "${GENTOO_PYTHON_EXECUTABLE}" -c "import sys; sys.stdout.write('.'.join(str(x) for x in sys.version_info[:2]))" OUTPUT_VARIABLE _python_version)
++  endif()
++
+   # Compute component-specific hints.
+   set(_Boost_FIND_LIBRARY_HINTS_FOR_COMPONENT "")
+   if(${COMPONENT} STREQUAL "mpi" OR ${COMPONENT} STREQUAL "mpi_python" OR
+@@ -1732,21 +1742,43 @@ foreach(COMPONENT ${Boost_FIND_COMPONENTS})
+       list(APPEND _boost_RELEASE_NAMES
+         ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component}${compiler}${_boost_MULTITHREADED}${_boost_RELEASE_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
+         ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component}${compiler}${_boost_MULTITHREADED}${_boost_RELEASE_ABI_TAG} )
++      if(${COMPONENT} STREQUAL "python" OR ${COMPONENT} STREQUAL "mpi_python")
++        list(APPEND _boost_RELEASE_NAMES
++          ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_RELEASE_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
++          ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_RELEASE_ABI_TAG})
++      endif()
+     endforeach()
+     list(APPEND _boost_RELEASE_NAMES
+       ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component}${_boost_MULTITHREADED}${_boost_RELEASE_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
+       ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component}${_boost_MULTITHREADED}${_boost_RELEASE_ABI_TAG}
+       ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component} )
++    if(${COMPONENT} STREQUAL "python" OR ${COMPONENT} STREQUAL "mpi_python")
++      list(APPEND _boost_RELEASE_NAMES
++        ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version}${_boost_MULTITHREADED}${_boost_RELEASE_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
++        ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version}${_boost_MULTITHREADED}${_boost_RELEASE_ABI_TAG}
++        ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version} )
++    endif()
++
+     if(_boost_STATIC_RUNTIME_WORKAROUND)
+       set(_boost_RELEASE_STATIC_ABI_TAG "-s${_boost_RELEASE_ABI_TAG}")
+       foreach(compiler IN LISTS _boost_COMPILER)
+         list(APPEND _boost_RELEASE_NAMES
+           ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component}${compiler}${_boost_MULTITHREADED}${_boost_RELEASE_STATIC_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
+           ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component}${compiler}${_boost_MULTITHREADED}${_boost_RELEASE_STATIC_ABI_TAG} )
++        if(${COMPONENT} STREQUAL "python" OR ${COMPONENT} STREQUAL "mpi_python")
++          list(APPEND _boost_RELEASE_NAMES
++            ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_RELEASE_STATIC_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
++            ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_RELEASE_STATIC_ABI_TAG})
++        endif()
+       endforeach()
+       list(APPEND _boost_RELEASE_NAMES
+         ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component}${_boost_MULTITHREADED}${_boost_RELEASE_STATIC_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
+         ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component}${_boost_MULTITHREADED}${_boost_RELEASE_STATIC_ABI_TAG} )
++      if(${COMPONENT} STREQUAL "python" OR ${COMPONENT} STREQUAL "mpi_python")
++        list(APPEND _boost_RELEASE_NAMES
++          ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version}${_boost_MULTITHREADED}${_boost_RELEASE_STATIC_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
++          ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version}${_boost_MULTITHREADED}${_boost_RELEASE_STATIC_ABI_TAG} )
++      endif()
+     endif()
+   endforeach()
+   if(Boost_THREADAPI AND ${COMPONENT} STREQUAL "thread")
+@@ -1784,22 +1816,44 @@ foreach(COMPONENT ${Boost_FIND_COMPONENTS})
+       list(APPEND _boost_DEBUG_NAMES
+         ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component}${compiler}${_boost_MULTITHREADED}${_boost_DEBUG_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
+         ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component}${compiler}${_boost_MULTITHREADED}${_boost_DEBUG_ABI_TAG} )
++      if(${COMPONENT} STREQUAL "python" OR ${COMPONENT} STREQUAL "mpi_python")
++        list(APPEND _boost_DEBUG_NAMES
++          ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_DEBUG_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
++          ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_DEBUG_ABI_TAG})
++      endif()
+     endforeach()
+     list(APPEND _boost_DEBUG_NAMES
+       ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component}${_boost_MULTITHREADED}${_boost_DEBUG_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
+       ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component}${_boost_MULTITHREADED}${_boost_DEBUG_ABI_TAG}
+       ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component}${_boost_MULTITHREADED}
+       ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component} )
++    if(${COMPONENT} STREQUAL "python" OR ${COMPONENT} STREQUAL "mpi_python")
++      list(APPEND _boost_DEBUG_NAMES
++        ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version}${_boost_MULTITHREADED}${_boost_DEBUG_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
++        ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version}${_boost_MULTITHREADED}${_boost_DEBUG_ABI_TAG}
++        ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version}${_boost_MULTITHREADED}
++        ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version} )
++    endif()
+     if(_boost_STATIC_RUNTIME_WORKAROUND)
+       set(_boost_DEBUG_STATIC_ABI_TAG "-s${_boost_DEBUG_ABI_TAG}")
+       foreach(compiler IN LISTS _boost_COMPILER)
+         list(APPEND _boost_DEBUG_NAMES
+           ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component}${compiler}${_boost_MULTITHREADED}${_boost_DEBUG_STATIC_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
+           ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component}${compiler}${_boost_MULTITHREADED}${_boost_DEBUG_STATIC_ABI_TAG} )
++        if(${COMPONENT} STREQUAL "python" OR ${COMPONENT} STREQUAL "mpi_python")
++          list(APPEND _boost_DEBUG_NAMES
++            ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_DEBUG_STATIC_ABI_TAG}-${Boost_LIB_VERSION}
++            ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_DEBUG_STATIC_ABI_TAG})
++        endif()
+       endforeach()
+       list(APPEND _boost_DEBUG_NAMES
+         ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component}${_boost_MULTITHREADED}${_boost_DEBUG_STATIC_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
+         ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${component}${_boost_MULTITHREADED}${_boost_DEBUG_STATIC_ABI_TAG} )
++      if(${COMPONENT} STREQUAL "python" OR ${COMPONENT} STREQUAL "mpi_python")
++        list(APPEND _boost_DEBUG_NAMES
++          ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version}${_boost_MULTITHREADED}${_boost_DEBUG_STATIC_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
++          ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_python_version}${_boost_MULTITHREADED}${_boost_DEBUG_STATIC_ABI_TAG} )
++      endif()
+     endif()
+   endforeach()
+   if(Boost_THREADAPI AND ${COMPONENT} STREQUAL "thread")
