@@ -61,6 +61,9 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-3.9.0_rc2-FindPythonInterp.patch
 
 	# upstream fixes (can usually be removed with a version bump)
+
+	# CMP0054 fixes
+	"${FILESDIR}"/${PN}-3.11.0-CMP0054-cmExportFileGenerator.patch
 )
 
 cmake_src_bootstrap() {

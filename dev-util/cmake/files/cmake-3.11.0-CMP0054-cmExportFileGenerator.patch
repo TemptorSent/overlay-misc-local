@@ -1,0 +1,33 @@
+diff --git a/Source/cmExportFileGenerator.cxx b/Source/cmExportFileGenerator.cxx
+index 434abdc..a32df43 100644
+--- a/Source/cmExportFileGenerator.cxx
++++ b/Source/cmExportFileGenerator.cxx
+@@ -882,7 +882,7 @@ void cmExportFileGenerator::GenerateExpectedTargetsCode(
+         "    list(APPEND _targetsDefined ${_expectedTarget})\n"
+         "  endif()\n"
+         "endforeach()\n"
+-        "if(\"${_targetsDefined}\" STREQUAL \"${_expectedTargets}\")\n"
++        "if(\"x${_targetsDefined}\" STREQUAL \"x${_expectedTargets}\")\n"
+         "  unset(_targetsDefined)\n"
+         "  unset(_targetsNotDefined)\n"
+         "  unset(_expectedTargets)\n"
+@@ -890,7 +890,8 @@ void cmExportFileGenerator::GenerateExpectedTargetsCode(
+         "  cmake_policy(POP)\n"
+         "  return()\n"
+         "endif()\n"
+-        "if(NOT \"${_targetsDefined}\" STREQUAL \"\")\n"
++        "if(\"x${_targetsDefined}\" STREQUAL \"x\")\n"
++        "else()\n"
+         "  message(FATAL_ERROR \"Some (but not all) targets in this export "
+         "set were already defined.\\nTargets Defined: ${_targetsDefined}\\n"
+         "Targets not yet defined: ${_targetsNotDefined}\\n\")\n"
+@@ -1052,7 +1053,8 @@ void cmExportFileGenerator::GenerateImportedFileCheckLoop(std::ostream& os)
+   os << "# Loop over all imported files and verify that they actually exist\n"
+         "foreach(target ${_IMPORT_CHECK_TARGETS} )\n"
+         "  foreach(file ${_IMPORT_CHECK_FILES_FOR_${target}} )\n"
+-        "    if(NOT EXISTS \"${file}\" )\n"
++        "    if(EXISTS \"${file}\" )\n"
++        "    else()\n"
+         "      message(FATAL_ERROR \"The imported target \\\"${target}\\\""
+         " references the file\n"
+         "   \\\"${file}\\\"\n"
