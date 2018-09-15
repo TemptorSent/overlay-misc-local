@@ -16,6 +16,8 @@ if [[ ${PV} == *9999 ]]; then
 else
 	SRC_URI="https://github.com/FreeCAD/FreeCAD/archive/${PV}.tar.gz -> ${P}.tar.gz"
 	KEYWORDS="~amd64 ~x86"
+	S="${WORKDIR}/FreeCAD-${PV}"
+	PATCHES=( "${FILESDIR}"/${PN}-0.14.3702-install-paths.patch )
 fi
 
 LICENSE="GPL-2"
@@ -55,9 +57,6 @@ DEPEND="${COMMON_DEPEND}
 	>=dev-lang/swig-2.0.4-r1:0
 	dev-python/pyside2-tools:=[${PYTHON_USEDEP}]"
 
-PATCHES=(
-	"${FILESDIR}"/${PN}-0.14.3702-install-paths.patch
-)
 
 # https://bugs.gentoo.org/show_bug.cgi?id=352435
 # https://www.gentoo.org/foundation/en/minutes/2011/20110220_trustees.meeting_log.txt
@@ -68,7 +67,6 @@ RESTRICT="mirror"
 #		salome-smesh - science overlay
 #		zipio++ - not in portage yet
 
-S="${WORKDIR}/FreeCAD-${PV}"
 
 DOCS=( README.md ChangeLog.txt )
 

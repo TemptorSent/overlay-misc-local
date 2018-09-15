@@ -5,7 +5,7 @@ EAPI=6
 
 PYTHON_COMPAT=( python2_7 )
 
-inherit cmake-utils eutils xdg-utils gnome2-utils fortran-2 python-single-r1
+inherit cmake-utils eutils xdg-utils fortran-2 python-single-r1
 
 DESCRIPTION="Qt based Computer Aided Design application"
 HOMEPAGE="https://www.freecadweb.org/"
@@ -16,42 +16,47 @@ if [[ ${PV} == *9999 ]]; then
 else
 	SRC_URI="https://github.com/FreeCAD/FreeCAD/archive/${PV}.tar.gz -> ${P}.tar.gz"
 	KEYWORDS="~amd64 ~x86"
+	S="${WORKDIR}/FreeCAD-${PV}"
+	PATCHES=( "${FILESDIR}"/${PN}-0.14.3702-install-paths.patch )
 fi
 
 LICENSE="GPL-2"
 SLOT="0"
-IUSE=""
+IUSE="+collada"
 REQUIRED_USE="${PYTHON_REQUIRED_USE}"
 
-#dev-qt/qtgui:4[-egl] and dev-qt/qtopengl:4[-egl] : Bug 564978
-#dev-python/pyside[svg] : Bug 591012
 COMMON_DEPEND="
 	${PYTHON_DEPS}
-	dev-cpp/eigen:3
+	>=dev-cpp/eigen-3.0.1
+	sci-libs/libmed:=[python,${PYTHON_USEDEP}]
 	dev-java/xerces
 	dev-libs/boost:=[python,${PYTHON_USEDEP}]
 	dev-libs/xerces-c[icu]
 	dev-python/matplotlib[${PYTHON_USEDEP}]
-	dev-python/pyside:0[X,svg,${PYTHON_USEDEP}]
-	dev-python/shiboken:0[${PYTHON_USEDEP}]
-	dev-qt/designer:4
-	dev-qt/qtgui:4[-egl]
-	dev-qt/qtopengl:4[-egl]
-	dev-qt/qtsvg:4
-	dev-qt/qtwebkit:4
+	dev-python/pyside2:=[gui,svg,${PYTHON_USEDEP}]
+	dev-python/shiboken2:=[${PYTHON_USEDEP}]
+	>=dev-qt/designer-5
+	>=dev-qt/qtgui-5
+	>=dev-qt/qtopengl-5
+	>=dev-qt/qtsvg-5
+	>=dev-qt/qtwebkit-5
 	media-libs/coin
 	media-libs/freetype
-	sci-libs/opencascade:*[vtk(+)]
+	>=sci-libs/opencascade-5.2[vtk(+)]
+	>=sci-libs/vtk-6.1
+	sci-libs/hdf5
 	sci-libs/orocos_kdl
 	sys-libs/zlib
+	collada? ( dev-python/pycollada[${PYTHON_USEDEP}] )
 	virtual/glu"
 RDEPEND="${COMMON_DEPEND}
 	dev-python/numpy[${PYTHON_USEDEP}]
-	dev-python/pivy[${PYTHON_USEDEP}]
-	dev-qt/assistant:4"
+	>=dev-qt/assistant-5"
+#	dev-python/pivy[${PYTHON_USEDEP}]
 DEPEND="${COMMON_DEPEND}
 	>=dev-lang/swig-2.0.4-r1:0
-	dev-python/pyside-tools:0[${PYTHON_USEDEP}]"
+	dev-python/pyside2-tools:=[${PYTHON_USEDEP}]"
+
 
 # https://bugs.gentoo.org/show_bug.cgi?id=352435
 # https://www.gentoo.org/foundation/en/minutes/2011/20110220_trustees.meeting_log.txt
@@ -61,6 +66,7 @@ RESTRICT="mirror"
 #   DEPEND and RDEPEND:
 #		salome-smesh - science overlay
 #		zipio++ - not in portage yet
+
 
 DOCS=( README.md ChangeLog.txt )
 
@@ -72,7 +78,7 @@ pkg_setup() {
 }
 
 src_configure() {
-	export QT_SELECT=4
+	export QT_SELECT=5
 
 	#-DOCC_* defined with cMake/FindOpenCasCade.cmake
 	#-DCOIN3D_* defined with cMake/FindCoin3D.cmake
@@ -80,10 +86,11 @@ src_configure() {
 	local mycmakeargs=(
 		-DOCC_INCLUDE_DIR="${CASROOT}"/inc
 		-DOCC_LIBRARY_DIR="${CASROOT}"/$(get_libdir)
-		-DCMAKE_INSTALL_DATADIR=/usr/share/${P}
-		-DCMAKE_INSTALL_DOCDIR=/usr/share/doc/${PF}
-		-DCMAKE_INSTALL_INCLUDEDIR=/usr/include/${P}
+		-DCMAKE_INSTALL_DATADIR=share/${P}
+		-DCMAKE_INSTALL_DOCDIR=share/doc/${PF}
+		-DCMAKE_INSTALL_INCLUDEDIR=include/${P}
 		-DFREECAD_USE_EXTERNAL_KDL="ON"
+		-DBUILD_QT5=ON
 	)
 
 	# TODO to remove embedded dependencies:
@@ -121,14 +128,8 @@ src_install() {
 
 pkg_postinst() {
 	xdg_mimeinfo_database_update
-	xdg_desktop_database_update
-
-	gnome2_icon_cache_update
 }
 
 pkg_postrm() {
 	xdg_mimeinfo_database_update
-	xdg_desktop_database_update
-
-	gnome2_icon_cache_update
 }
