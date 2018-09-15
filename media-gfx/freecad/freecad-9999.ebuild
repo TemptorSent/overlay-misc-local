@@ -17,8 +17,9 @@ else
 	SRC_URI="https://github.com/FreeCAD/FreeCAD/archive/${PV}.tar.gz -> ${P}.tar.gz"
 	KEYWORDS="~amd64 ~x86"
 	S="${WORKDIR}/FreeCAD-${PV}"
-	PATCHES=( "${FILESDIR}"/${PN}-0.14.3702-install-paths.patch )
 fi
+
+PATCHES=( "${FILESDIR}"/${PN}-0.14.3702-install-paths.patch )
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -74,7 +75,7 @@ pkg_setup() {
 	fortran-2_pkg_setup
 	python-single-r1_pkg_setup
 
-	[[ -z ${CASROOT} ]] && die "empty \$CASROOT, run eselect opencascade set or define otherwise"
+	[[ -z "${CASROOT}" ]] && die "empty \$CASROOT, run eselect opencascade set or define otherwise"
 }
 
 src_configure() {
@@ -84,12 +85,12 @@ src_configure() {
 	#-DCOIN3D_* defined with cMake/FindCoin3D.cmake
 	#-DSOQT_ not used
 	local mycmakeargs=(
-		-DOCC_INCLUDE_DIR="${CASROOT}"/inc
-		-DOCC_LIBRARY_DIR="${CASROOT}"/$(get_libdir)
-		-DCMAKE_INSTALL_DATADIR=share/${P}
-		-DCMAKE_INSTALL_DOCDIR=share/doc/${PF}
-		-DCMAKE_INSTALL_INCLUDEDIR=include/${P}
-		-DFREECAD_USE_EXTERNAL_KDL="ON"
+		-DOCC_INCLUDE_DIR="${CASROOT}/inc"
+		-DOCC_LIBRARY_DIR="${CASROOT}/$(get_libdir)"
+		-DCMAKE_INSTALL_DATADIR="share/${P}"
+		-DCMAKE_INSTALL_DOCDIR="share/doc/${PF}"
+		-DCMAKE_INSTALL_INCLUDEDIR="include/${P}"
+		-DFREECAD_USE_EXTERNAL_KDL=ON
 		-DBUILD_QT5=ON
 	)
 
@@ -110,20 +111,21 @@ src_install() {
 	make_desktop_entry FreeCAD "FreeCAD" "" "" "MimeType=application/x-extension-fcstd;"
 
 	# install mimetype for FreeCAD files
-	insinto /usr/share/mime/packages
-	newins "${FILESDIR}"/${PN}.sharedmimeinfo "${PN}.xml"
+	insinto "/usr/share/mime/packages"
+	newins "${FILESDIR}/${PN}.sharedmimeinfo" "${PN}.xml"
 
 	# install icons to correct place rather than /usr/share/freecad
-	pushd "${ED%/}"/usr/share/${P} || die
-	local size
-	for size in 16 32 48 64; do
-		newicon -s ${size} freecad-icon-${size}.png freecad.png
-	done
-	doicon -s scalable freecad.svg
-	newicon -s 64 -c mimetypes freecad-doc.png application-x-extension-fcstd.png
+	dodir "/usr/share/${P}"
+	pushd "${ED%/}/usr/share/${P}" || die
+		local size
+		for size in 16 32 48 64; do
+			newicon -s ${size} "freecad-icon-${size}.png" "freecad.png"
+		done
+		doicon -s scalable "freecad.svg"
+		newicon -s 64 -c mimetypes "freecad-doc.png" "application-x-extension-fcstd.png"
 	popd || die
 
-	python_optimize "${ED%/}"/usr/{,share/${P}/}Mod/
+	python_optimize "${ED%/}/usr"/{,share/${P}/}Mod/
 }
 
 pkg_postinst() {
